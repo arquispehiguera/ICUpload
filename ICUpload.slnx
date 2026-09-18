@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="ICUpload.Core/ICUpload.Core.csproj" />
+  <Project Path="ICUpload.Infraestructure/ICUpload.Infraestructure.csproj" />
+  <Project Path="ICUpload.Process/ICUpload.Process.csproj" />
+</Solution>

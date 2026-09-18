@@ -1,0 +1,13 @@
+## .NET
+bin/
+obj/
+*.user
+.vs/
+
+## Secretos locales — ver appsettings.json para la convención
+**/appsettings.Local.json
+**/appsettings.*.Local.json
+
+## Herramientas
+.atl/
+.claude/settings.local.json
