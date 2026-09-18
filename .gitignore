@@ -11,3 +11,6 @@ obj/
 ## Herramientas
 .atl/
 .claude/settings.local.json
+
+## Artefactos de deploy
+deploy/publish/

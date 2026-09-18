@@ -1,9 +1,9 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
-using PacificoSeguros.Core.Interfaces;
+using ICUpload.Core.Interfaces;
 using System.Data;
 
-namespace PacificoSeguros.Infraestructure.Data
+namespace ICUpload.Infraestructure.Data
 {
     // Espeja DAL_Conexion.Conectar(Servidor, DataBase): arma la cadena CN2 con
     // string.Format contra la plantilla + credenciales fijas (usraccmw/inc2001) que ya están

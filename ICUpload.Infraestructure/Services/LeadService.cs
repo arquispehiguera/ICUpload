@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Logging;
-using PacificoSeguros.Core.Entities;
-using PacificoSeguros.Core.Interfaces;
+using ICUpload.Core.Entities;
+using ICUpload.Core.Interfaces;
 
-namespace PacificoSeguros.Infraestructure.Services
+namespace ICUpload.Infraestructure.Services
 {
     // Puerto fiel de CargarRegistro.InsertarContacto (CargasInconcertWS_C2C_2\CargasInconcertWS_C2C\CargarRegistro.asmx.cs,
     // línea 18) — un intento completo del flujo de 16 pasos de WORKER_SPEC.md. Vive en

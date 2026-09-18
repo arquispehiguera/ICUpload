@@ -1,4 +1,4 @@
-namespace PacificoSeguros.Core.Interfaces
+namespace ICUpload.Core.Interfaces
 {
     // Reemplaza el mail hardcodeado del legacy (BL_Mail: SMTP + password en texto plano,
     // destinatario fijo). campaign espeja el segundo parámetro de BL_Mail.EnviarMail(mensaje,

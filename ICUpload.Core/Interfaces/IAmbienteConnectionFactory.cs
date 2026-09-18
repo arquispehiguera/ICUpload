@@ -1,4 +1,4 @@
-namespace PacificoSeguros.Core.Interfaces
+namespace ICUpload.Core.Interfaces
 {
     // Arma la conexión dinámica CN2 del legacy (DAL_Conexion.Conectar(Servidor, DataBase)):
     // cada campaña puede vivir en un servidor/base distinto (objBECampana.ServidorSQL /

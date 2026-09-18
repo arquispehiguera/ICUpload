@@ -1,11 +1,11 @@
 using Dapper;
 using Microsoft.Extensions.Logging;
-using PacificoSeguros.Core.Entities;
-using PacificoSeguros.Core.Interfaces;
-using PacificoSeguros.Infraestructure.Data;
+using ICUpload.Core.Entities;
+using ICUpload.Core.Interfaces;
+using ICUpload.Infraestructure.Data;
 using System.Data;
 
-namespace PacificoSeguros.Infraestructure.Repositories
+namespace ICUpload.Infraestructure.Repositories
 {
     // Todo el acceso SQL del feature de Leads en un repo cohesivo — mismo estilo que
     // InteraccionRepository.cs (Dapper + DbContextApp para la conexión fija). Las

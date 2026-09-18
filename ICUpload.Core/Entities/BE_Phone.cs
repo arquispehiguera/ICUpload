@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace PacificoSeguros.Core.Entities
+namespace ICUpload.Core.Entities
 {
    public  class BE_Phone
     {

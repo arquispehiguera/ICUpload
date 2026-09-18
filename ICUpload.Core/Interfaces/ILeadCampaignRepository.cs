@@ -1,6 +1,6 @@
-using PacificoSeguros.Core.Entities;
+using ICUpload.Core.Entities;
 
-namespace PacificoSeguros.Core.Interfaces
+namespace ICUpload.Core.Interfaces
 {
     // Todo el acceso SQL del feature de Leads en un solo repo cohesivo (no se separa por
     // clase BL_*/DAL_* legacy porque son lecturas/escrituras simples) — ver plan.

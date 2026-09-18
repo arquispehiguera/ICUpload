@@ -1,4 +1,4 @@
-namespace PacificoSeguros.Core.Entities
+namespace ICUpload.Core.Entities
 {
     // No está en la lista de entidades del plan, pero hace falta para portar fielmente
     // BL_Campana.CrearImportacion: el legacy distingue dos fallos distintos de

@@ -3,14 +3,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
-using PacificoSeguros.Core.Interfaces;
-using PacificoSeguros.Infraestructure.Data;
-using PacificoSeguros.Infraestructure.Notifications;
-using PacificoSeguros.Infraestructure.Repositories;
-using PacificoSeguros.Infraestructure.Services;
-using PacificoSeguros.Process.Services;
+using ICUpload.Core.Interfaces;
+using ICUpload.Infraestructure.Data;
+using ICUpload.Infraestructure.Notifications;
+using ICUpload.Infraestructure.Repositories;
+using ICUpload.Infraestructure.Services;
+using ICUpload.Process.Services;
 
-namespace PacificoSeguros.Process
+namespace ICUpload.Process
 {
     class Program
     {
@@ -24,7 +24,7 @@ namespace PacificoSeguros.Process
             }
             else
             {
-                basePath = @"C:\JobsDeployment\PacificoSegurosProcess";
+                basePath = @"C:\JobsDeployment\ICUpload";
             }
 
             // Serilog.Sinks.File resuelve rutas relativas contra el directorio de
@@ -45,7 +45,7 @@ namespace PacificoSeguros.Process
             Log.Logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(configuration)
                 .Enrich.FromLogContext()
-                .Enrich.WithProperty("Application", "PacificoSegurosProcess")
+                .Enrich.WithProperty("Application", "ICUpload")
                 .CreateLogger();
 
             try
@@ -69,7 +69,7 @@ namespace PacificoSeguros.Process
 
         private static IHostBuilder CreateHostBuilder(string[] args, IConfiguration configuration) =>
             Host.CreateDefaultBuilder(args)
-                .UseWindowsService(options => options.ServiceName = "PacificoSegurosProcess")
+                .UseWindowsService(options => options.ServiceName = "ICUploadProcess")
                 .UseSerilog()
                 .ConfigureAppConfiguration((_, builder) => builder.AddConfiguration(configuration))
                 .ConfigureServices((_, services) =>

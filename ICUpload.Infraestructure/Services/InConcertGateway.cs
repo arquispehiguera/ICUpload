@@ -1,10 +1,10 @@
 using inConcertSDKnet;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using PacificoSeguros.Core.Entities;
-using PacificoSeguros.Core.Interfaces;
+using ICUpload.Core.Entities;
+using ICUpload.Core.Interfaces;
 
-namespace PacificoSeguros.Infraestructure.Services
+namespace ICUpload.Infraestructure.Services
 {
     // Única clase que referencia inConcertSDKnet (CSession, OEManager, CPhone, CContactData,
     // PhoneType, DuplicateCheck, DuplicateSolver, ImportationStatus, CContact) — ver plan.
@@ -14,11 +14,25 @@ namespace PacificoSeguros.Infraestructure.Services
     {
         private const string OutboundEngineClient = "outboundengine";
 
+        // BL_Usuario.ReturnSessionKey / File.WriteAllText — mismo path exacto del webservice
+        // legacy (decisión confirmada: el worker corre en el mismo server / un share accesible
+        // desde esa ruta). Si el path no existe donde corra este worker, el login va a fallar
+        // ahí mismo — es la misma fragilidad que ya tenía el legacy, no se agregó manejo nuevo.
+        private const string SessionKeysBasePath = @"D:\Deployments\ServiciosWeb(Apis)\CargasInconcertC2CWebservice\SessionKeys\";
+
         // ProcessId que fuerzan Vcc = "tmp2" al resolver la sesión — BL_Usuario.IniciarSesion.
         private static readonly HashSet<string> PhoenixOnlineProcessIds = new(StringComparer.Ordinal)
         {
             "Tmp_Fija_OnlineBases", "TMP_CAEQ_PHOENIX_1", "TMP_CAEQ_PHOENIX_2",
             "TMP_CAEQ_PHOENIX_3", "TMP_CAEQ_PHOENIX_BO", "Tmp_Fija_OnLine", "Tmp_Movil_Online_2"
+        };
+
+        // Subconjunto de los de arriba (solo los 4 Phoenix, sin OnlineBases/OnLine/Movil_Online_2)
+        // que además usan un Vcc DISTINTO ("tmp2_cloud2") para buscar el session key cacheado —
+        // asimetría real del legacy entre el Vcc de sesión y el Vcc de archivo, no es un typo.
+        private static readonly HashSet<string> PhoenixSessionKeyVccOverrideProcessIds = new(StringComparer.Ordinal)
+        {
+            "TMP_CAEQ_PHOENIX_1", "TMP_CAEQ_PHOENIX_2", "TMP_CAEQ_PHOENIX_3", "TMP_CAEQ_PHOENIX_BO"
         };
 
         private static readonly HashSet<string> TmpCloudVccs = new(StringComparer.Ordinal)
@@ -47,11 +61,12 @@ namespace PacificoSeguros.Infraestructure.Services
         public string ResolveContactId(string contactId) =>
             !string.IsNullOrEmpty(contactId) && contactId.Trim() != "" ? contactId : new CContact().Id;
 
-        // BL_Usuario.IniciarSesion — sin cache de archivo (decisión confirmada), con failover
-        // de nodo preservado. Resuelve primero el Vcc efectivo (casos tmp_cloud* y
-        // Phoenix/OnlineBases), intenta login directo contra la IP+Password de la campaña y,
-        // si falla, itera ObtenerNodoUser con la password genérica de config hasta el primer
-        // login exitoso.
+        // BL_Usuario.IniciarSesion — porteado con cache de session key por archivo (LoginFromToken)
+        // preservada, más el failover de nodo. Resuelve primero el Vcc efectivo (casos tmp_cloud*
+        // y Phoenix/OnlineBases, mutando campana.Vcc igual que el legacy cuando corresponde),
+        // intenta LoginFromToken con el session key cacheado, si falla intenta Login directo
+        // contra la IP+Password de la campaña, y si ESE falla itera ObtenerNodoUser con la
+        // password genérica de config hasta el primer login exitoso.
         public async Task<InConcertSession> LoginAsync(BE_Campana campana, CancellationToken ct = default)
         {
             CSession session;
@@ -61,13 +76,38 @@ namespace PacificoSeguros.Infraestructure.Services
             }
             else
             {
-                var vcc = PhoenixOnlineProcessIds.Contains(campana.ProcessId) ? "tmp2" : campana.Vcc;
-                session = new CSession(_vsUser, vcc);
+                if (PhoenixOnlineProcessIds.Contains(campana.ProcessId))
+                {
+                    // Mutación real del legacy (objCampana.Vcc = "tmp2") — se preserva porque el
+                    // resto del flujo (incluida la escritura del session key) usa campana.Vcc
+                    // después de este punto.
+                    campana.Vcc = "tmp2";
+                }
+                session = new CSession(_vsUser, campana.Vcc);
             }
 
-            var loginResult = session.Login(campana.Password, OutboundEngineClient, campana.Ip, _vsPort);
+            // El Vcc para buscar el session key cacheado difiere del Vcc de sesión solo para las
+            // 4 campañas Phoenix puntuales — para todo lo demás (incluidas OnlineBases/OnLine/
+            // Movil_Online_2, que ya mutaron campana.Vcc a "tmp2" arriba) usa campana.Vcc tal cual.
+            var sessionKeyVcc = PhoenixSessionKeyVccOverrideProcessIds.Contains(campana.ProcessId)
+                ? "tmp2_cloud2"
+                : campana.Vcc;
+
+            // Sin try/catch a propósito: si nunca se cacheó un session key para esta combinación
+            // Ip/Vcc, el legacy también tira acá (ReturnSessionKey no atrapa la excepción) y deja
+            // que el catch general de InsertarContacto la absorba — se replica esa fragilidad tal
+            // cual, no es un caso a "arreglar" con un fallback silencioso.
+            var prevSessionKey = ReadSessionKey(campana.Ip, sessionKeyVcc);
+            var loginResult = session.LoginFromToken(campana.Ip, _vsPort, OutboundEngineClient, prevSessionKey);
             if (loginResult.OK)
             {
+                return ToInConcertSession(session);
+            }
+
+            loginResult = session.Login(campana.Password, OutboundEngineClient, campana.Ip, _vsPort);
+            if (loginResult.OK)
+            {
+                WriteSessionKey(campana.Vcc, campana.Ip, session.SessionId);
                 return ToInConcertSession(session);
             }
 
@@ -77,12 +117,32 @@ namespace PacificoSeguros.Infraestructure.Services
                 loginResult = session.Login(_vsPassword, OutboundEngineClient, nodo.Ip, _vsPort);
                 if (loginResult.OK)
                 {
+                    WriteSessionKey(campana.Vcc, nodo.Ip, session.SessionId);
                     break;
                 }
                 _logger.LogWarning("Login fallido contra nodo de failover — Ip: {Ip} / Vcc: {Vcc} / Info: {Info}", nodo.Ip, session.VCC, loginResult.Info);
             }
 
             return ToInConcertSession(session);
+        }
+
+        // BL_Usuario.ReturnSessionKey — mismo esquema de path (SessionKeys\{Vcc}\SessionKey{último
+        // octeto de la Ip}.txt) y mismo formato de contenido ("sessionId|fecha", se descarta la
+        // fecha acá igual que el legacy).
+        private static string ReadSessionKey(string ip, string vcc)
+        {
+            var octeto = ip.Split('.')[3];
+            var path = Path.Combine(SessionKeysBasePath, vcc, $"SessionKey{octeto}.txt");
+            return File.ReadAllText(path).Split('|')[0];
+        }
+
+        // Legacy: File.WriteAllText(...) sin crear el directorio antes — si "SessionKeys\{vcc}\"
+        // no existe, tira. Se preserva esa misma fragilidad (no se agregó Directory.CreateDirectory).
+        private static void WriteSessionKey(string vcc, string ip, string sessionId)
+        {
+            var octeto = ip.Split('.')[3];
+            var path = Path.Combine(SessionKeysBasePath, vcc, $"SessionKey{octeto}.txt");
+            File.WriteAllText(path, $"{sessionId}|{DateTime.Now}");
         }
 
         private static InConcertSession ToInConcertSession(CSession session) => new()

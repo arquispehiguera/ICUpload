@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using System.Data;
 
-namespace PacificoSeguros.Infraestructure.Data
+namespace ICUpload.Infraestructure.Data
 {
     public class DbContextApp
     {

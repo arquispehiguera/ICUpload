@@ -1,7 +1,7 @@
-using PacificoSeguros.Core.Entities;
+using ICUpload.Core.Entities;
 using Polly;
 
-namespace PacificoSeguros.Infraestructure
+namespace ICUpload.Infraestructure
 {
     // Política Polly dedicada al flujo de negocio completo de Leads — no reusa
     // ResiliencePolicies (es internal y sus políticas son para llamadas puntuales, no para

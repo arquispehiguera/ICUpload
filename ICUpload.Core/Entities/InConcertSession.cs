@@ -1,4 +1,4 @@
-namespace PacificoSeguros.Core.Entities
+namespace ICUpload.Core.Entities
 {
     // ICUpload.Core no puede depender de inConcertSDKnet (solo InConcertGateway, en
     // Infraestructure, tiene esa referencia — ver plan). Este handle opaco es lo que permite

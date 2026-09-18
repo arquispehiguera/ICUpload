@@ -1,4 +1,4 @@
-namespace PacificoSeguros.Core.Entities
+namespace ICUpload.Core.Entities
 {
     // Contrato de éxito/fallo del legacy: el string literal "Carga Terminada" es el ÚNICO
     // indicador de éxito (WORKER_SPEC.md #4.16) — por eso Success se calcula a partir de

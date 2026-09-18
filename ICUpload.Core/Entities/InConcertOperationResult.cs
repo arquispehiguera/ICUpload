@@ -1,4 +1,4 @@
-namespace PacificoSeguros.Core.Entities
+namespace ICUpload.Core.Entities
 {
     // Espejo de inConcertSDKnet.APIResult (Ok/Info) — el resultado libre en texto que el SDK
     // real devuelve para cada operación. Info es donde hay que buscar el substring exacto de

@@ -7,11 +7,11 @@ using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Serilog.Context;
-using PacificoSeguros.Core.Entities;
-using PacificoSeguros.Core.Interfaces;
-using PacificoSeguros.Infraestructure;
+using ICUpload.Core.Entities;
+using ICUpload.Core.Interfaces;
+using ICUpload.Infraestructure;
 
-namespace PacificoSeguros.Process.Services
+namespace ICUpload.Process.Services
 {
     // Consume la cola "Lead" (ya declarada en el broker, con su DLX apuntando a "LeadFail") y
     // corre el flujo completo de LeadService por mensaje. Mismo espíritu que

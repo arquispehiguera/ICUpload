@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using PacificoSeguros.Core.Interfaces;
+using ICUpload.Core.Interfaces;
 
-namespace PacificoSeguros.Infraestructure.Notifications
+namespace ICUpload.Infraestructure.Notifications
 {
     // Reemplaza BL_Mail.EnviarMail (SMTP + password en texto plano, destinatario fijo) por un
     // LogWarning estructurado con marcador fijo ("ALERTA DE NEGOCIO") — el sink de Serilog a

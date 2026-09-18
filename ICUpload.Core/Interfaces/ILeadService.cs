@@ -1,6 +1,6 @@
-using PacificoSeguros.Core.Entities;
+using ICUpload.Core.Entities;
 
-namespace PacificoSeguros.Core.Interfaces
+namespace ICUpload.Core.Interfaces
 {
     // Puerto fiel de CargarRegistro.InsertarContacto (un intento completo del flujo de 16
     // pasos). Nunca lanza excepción de negocio — siempre devuelve un LeadResult; la capa de

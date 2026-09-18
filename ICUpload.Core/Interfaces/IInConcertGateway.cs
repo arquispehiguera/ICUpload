@@ -1,6 +1,6 @@
-using PacificoSeguros.Core.Entities;
+using ICUpload.Core.Entities;
 
-namespace PacificoSeguros.Core.Interfaces
+namespace ICUpload.Core.Interfaces
 {
     // Única interfaz que representa el SDK inConcertSDKnet hacia el resto de la aplicación.
     // Solo InConcertGateway (Infraestructure) referencia el ensamblado real — ver plan.
@@ -10,8 +10,9 @@ namespace PacificoSeguros.Core.Interfaces
         // — cuando el ContactId de entrada viene vacío, el SDK genera uno nuevo.
         string ResolveContactId(string contactId);
 
-        // Login sin cache de archivo (decisión confirmada), pero CON failover de nodo:
-        // intento directo contra objCampana.Ip/Password; si falla, itera
+        // Login con cache de session key por archivo (LoginFromToken, mismo path que el legacy)
+        // más failover de nodo: intenta LoginFromToken con el session key cacheado, si falla
+        // intenta login directo contra campana.Ip/Password, y si ESE falla itera
         // ILeadCampaignRepository.ObtenerNodoUser con password genérica (InConcert:VsPassword)
         // hasta el primer login exitoso. Incluye también la resolución del Vcc efectivo
         // (casos tmp_cloud* / Phoenix-OnlineBases) — ver BL_Usuario.IniciarSesion.
