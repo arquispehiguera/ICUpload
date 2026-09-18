@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-using System.Net;
-using System.Net.Http;
+using System.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -39,7 +37,7 @@ namespace PacificoSeguros.Process
                 .SetBasePath(basePath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 // Secretos reales de este entorno (connection strings, credenciales de
-                // Inconcert/Oracle) viven acá, gitignoreado — appsettings.json solo tiene
+                // Inconcert) viven acá, gitignoreado — appsettings.json solo tiene
                 // placeholders para poder commitearse.
                 .AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true)
                 .Build();
@@ -52,7 +50,7 @@ namespace PacificoSeguros.Process
 
             try
             {
-                Log.Information("Iniciando CtiInteraccion Processor...");
+                Log.Information("Iniciando Lead Processor...");
                 var host = CreateHostBuilder(args, configuration).Build();
                 await host.RunAsync();
                 Log.Information("Aplicación detenida correctamente");
@@ -82,20 +80,9 @@ namespace PacificoSeguros.Process
                         o.ShutdownTimeout = TimeSpan.FromSeconds(15);
                     });
 
+                    // DbContextApp expone la conexión fija AppConnection/CN, usada por el
+                    // feature de Leads (ConfiguracionCampana/RegistrarFin).
                     services.AddSingleton<DbContextApp>();
-                    services.AddHttpClient();
-                    services.ConfigureHttpClientDefaults(builder =>
-                        builder.ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
-                        {
-                            PooledConnectionLifetime = TimeSpan.FromMinutes(5),
-                            AutomaticDecompression = DecompressionMethods.All
-                        }));
-                    services.AddTransient<IInteraccionRepository, InteraccionRepository>();
-                    services.AddSingleton<IOracleApiClient, OracleApiClient>();
-                    services.AddKeyedSingleton<IHeartbeatMonitor, HeartbeatMonitor>("Producer");
-                    services.AddKeyedSingleton<IHeartbeatMonitor, HeartbeatMonitor>("Consumers");
-                    services.AddHostedService<CtiInteraccionBackgroundService>();
-                    services.AddHostedService<WatchdogHostedService>();
 
                     // Feature Leads (ICUploadLead) — ver WORKER_SPEC.md.
                     services.AddSingleton<IAmbienteConnectionFactory, AmbienteConnectionFactory>();
